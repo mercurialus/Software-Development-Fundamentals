@@ -9,3 +9,7 @@ let rec solution predicate lst =
    if predicate h then 0
   else try 1 + solution predicate t with
   | NotFound (idx,_) -> raise (NotFound(idx+1,len));;
+
+(*input -> let pred  x = x mod 3 = 0
+            solution pred ([1;2;4;5;7;8;9])*)
+(*output -> 6*) 
