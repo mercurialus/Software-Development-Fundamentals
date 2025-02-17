@@ -1,22 +1,37 @@
 #!/usr/bin/env bash
 
 # Check if exactly two arguments are provided
-if [ "$#" -ne 2 ]; then 
+if [ "$#" -ne 2 ]; then
   echo "Usage: $0 <monitor_directory> <backup_directory>"
   exit 1
-fi  
+fi
 
 # Assign the values to the variables for easy access later
 MONITOR_DIR="$1"
 BACKUP_DIR="$2"
 
+# Check if the monitor directory exists
+if [ ! -d "$MONITOR_DIR" ]; then
+  echo "Error: Monitor directory '$MONITOR_DIR' does not exist."
+  exit 1
+fi
+
 # Create the backup directory if it doesn't exist
 mkdir -p "$BACKUP_DIR"
 
-# Inform the user about the directories used  
+# Check if the backup directory is writable
+if [ ! -w "$BACKUP_DIR" ]; then
+  echo "Error: Backup directory '$BACKUP_DIR' is not writable."
+  exit 1
+fi
+
+# Inform the user about the directories used
 echo "Monitoring Directory: $MONITOR_DIR"
 echo "Backup Directory: $BACKUP_DIR"
 echo "Type <exit> and press Enter to stop the script"
+
+# Enable nullglob so that if no files match, the loop does not use the glob pattern literally
+shopt -s nullglob
 
 # Declare an associative array to store the last modification time of each file
 declare -A last_mod_time
@@ -27,7 +42,7 @@ while true; do
   if read -t 0.1 -r user_input; then
     if [ "$user_input" = "exit" ]; then
       echo "Exiting the backup utility"
-      break 
+      break
     fi
   fi
 
@@ -35,7 +50,7 @@ while true; do
   for file in "$MONITOR_DIR"/*; do
     # Only process regular files
     if [ -f "$file" ]; then
-      # Get the current modification time using stat
+      # Get the current modification time using stat (GNU/Linux syntax)
       current_mtime=$(stat -c %Y "$file")
 
       # If this file is seen for the first time, store its modification time
