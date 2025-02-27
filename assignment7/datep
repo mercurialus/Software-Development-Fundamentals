@@ -1,0 +1,9 @@
+#! /usr/bin/bash
+
+month=$(date +"%b")
+day=$(date +"%d")
+year=$(date +"%Y")
+
+datep() {
+  echo "$month $day, $year "
+}

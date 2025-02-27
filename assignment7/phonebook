@@ -1,0 +1,72 @@
+#! /usr/bin/bash
+
+oper=$1
+
+if [ ! -f "phonebook.txt" ]; then
+  touch "phonebook.txt"
+fi
+
+create_new_entry() {
+  # Remove the command argument ("new")
+  shift
+  if [ "$#" -lt 2 ]; then
+    echo "Usage: $0 new <name> <phone number>"
+    return 1
+  fi
+
+  # The phone number is the last argument
+  phone_number="${!#}"
+
+  # The name is all the arguments except the last one
+  name_array=("${@:1:$#-1}")
+  name="${name_array[*]}"
+
+  # Validate phone number format (ddd-ddd-dddd)
+  if [[ ! $phone_number =~ ^[0-9]{3}-[0-9]{3}-[0-9]{4}$ ]]; then
+    echo "Error: Invalid phone number format. Use ddd-ddd-dddd."
+    return 1
+  fi
+
+  echo "$name $phone_number" >>"phonebook.txt"
+}
+
+list_contents() {
+  if [[ ! -s "phonebook.txt" ]]; then
+    echo "phonebook is empty"
+  else
+    cat "phonebook.txt"
+  fi
+}
+
+remove_entry() {
+  shift # Remove the operation argument ("remove")
+  local name="$*"
+  if grep -qF "$name" "phonebook.txt"; then
+    grep -vF "$name" "phonebook.txt" >"temp.txt" && mv "temp.txt" "phonebook.txt"
+    echo "Entry removed: $name"
+  else
+    echo "Error: Entry not found."
+  fi
+}
+
+clear_storage() {
+  sed -i '1,$d' "phonebook.txt"
+}
+
+lookup() {
+  local input="$*"
+  input="${input#* }"
+  grep "$input" "phonebook.txt" | awk '{print $NF}'
+}
+
+case "$oper" in
+"new") create_new_entry "$@" ;;
+"list") list_contents ;;
+"remove") remove_entry "$@" ;;
+"clear") clear_storage ;;
+"lookup") lookup "$@" ;;
+*)
+  echo "Usage: $0 {new|list|remove|clear|lookup} [arguments]"
+  exit 1
+  ;;
+esac

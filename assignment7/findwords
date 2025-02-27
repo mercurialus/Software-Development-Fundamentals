@@ -1,0 +1,30 @@
+#! /usr/bin/bash
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 pattern [file]" 1>&2
+  exit 1
+fi
+
+pattern="$1"
+file="${2:-words}"
+
+#Processing the file:
+#1.) Break the file into one word per line using "tr"
+#2.) Use grep with -i (for ignoring the case) and
+#    -E (for extending the regex) to select words matching pattern
+#3.) Sort the matching words alphabetically ignoring the case of each word.
+#4.) Using awk to format output into four columns,.
+
+tr -cs "[:alpha:]'" '\n' <"$file" 2>/dev/null |
+  grep -i -E "$pattern" |
+  awk '{
+    printf "%-20s", $0;
+    # print newline after every fourth word
+    if (NR%4==0){
+      print "";
+    }
+}
+END {
+  # Line has less than 4 words -> end with a new line
+  if ( NR % 4 != 0 ) print "";
+}'

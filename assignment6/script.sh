@@ -74,5 +74,5 @@ while true; do
   done
 
   # Pause for a short while before checking again
-  sleep 1
+  sleep 1000
 done

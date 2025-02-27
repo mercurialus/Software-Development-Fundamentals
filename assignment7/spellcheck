@@ -1,0 +1,45 @@
+#!/usr/bin/bash
+
+if [ "$#" -eq 0 ]; then
+  echo "Usage: spellcheck filename" >&2
+  exit 1
+fi
+
+for file in "$@"; do
+  if [ ! -f "$file" ]; then
+    echo " Error: '$file' is not a valid file." >&2
+    continue
+  fi
+
+  spelling_file="${file}.spelling"
+  
+  if [ -f "$spelling_file" ]; then
+    echo "Deleting old file '$spelling_file'
+          and replacing it."
+    rm "$spelling_file"
+  else
+    echo "Creating '$spelling_file'"
+  fi
+
+touch "$spelling_file"
+
+total_miss=0
+declare -A unique_miss
+
+while IFS= read -r word; do
+  if ! grep -qi "^${word}$" /usr/share/dict/words; then
+    echo "$word" >> "$spelling_file"
+    total_miss=$((total_miss+1))
+
+    if [ -z "${unique_miss[$word]}" ]; then
+      unique_miss["$word"]=1
+    fi
+  fi
+done < <(tr -s '[:space:]' '\n' < "$file")
+
+unique_count=${#unique_miss[@]}
+
+echo "Completed processing '$file': $total_miss
+       misspelled words found, $unique_count unique words."
+done
+exit 0

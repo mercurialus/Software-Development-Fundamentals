@@ -1,0 +1,18 @@
+#! /usr/bin/bash
+
+if [ "$#" -le 1 ]; then
+    echo "Usage: combine outputfilename [inputfilename ...] " >&2
+    exit 1
+fi
+
+output="$1"
+
+if [ -e "$output" ]; then
+    echo " Error: Output file should not exist" >&2
+    exit 1
+fi
+
+for file in "$@"; do
+    cat "$file" >> "$output" 2> >(sed 's/^cat: //' >> "$output")
+done
+exit 0
